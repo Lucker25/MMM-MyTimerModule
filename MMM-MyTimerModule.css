@@ -1,0 +1,72 @@
+.moduleDiv{
+  background-color:transparent;
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  width: 100%;
+}
+
+.buttonDiv{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+
+.btnClass{
+  text-transform: uppercase;
+  color: #646464; 
+  outline: none;
+  width: 8vw; 
+  height: 8vh; 
+  margin: 1vh 1vw;
+  box-shadow: 0;
+  border: none; 
+  background-color: transparent;
+  margin: 1vh 0.2vw; 
+  font-size: 250%;
+  
+}
+
+#startButton:disabled{
+  display: none;
+}
+#stopButton:disabled{
+  display: none;
+}
+
+.btnClass:active{
+  color: wheat;
+}
+
+.timeDiv{
+  display: flex; 
+  flex-direction: row;
+  justify-content: center;
+}
+.timeDiv .timeDisplay{
+  text-align: left;
+
+
+}
+.timeDiv .btnClass{
+  width: 4vw; 
+  margin-left: 0vw;
+  padding-left: 0vw;
+  
+
+}
+.timeDiv .btnClass:disabled{
+  display: none;
+
+}
+
+.horizontalDiv{
+  display: flex; 
+  flex-direction: column;
+  justify-content: center;
+}
+
+.timeDisplay{
+  font-size: 4rem;
+  
+}
