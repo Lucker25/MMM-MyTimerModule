@@ -16,6 +16,7 @@
  */
 var timer = new timerModule(); 
 
+
 Module.register("MMM-MyTimerModule",{
   
 	// Default module config.
@@ -61,6 +62,7 @@ Module.register("MMM-MyTimerModule",{
     hoursDiv.appendChild(timer.graphics.addButtonIntervalUpDown("hoursUp","btnClass", "hours", "up")); 
     hoursDiv.appendChild(timer.graphics.addTimeSpan("hours",timer.interval.hours, "timeDisplay", true));
     hoursDiv.appendChild(timer.graphics.addButtonIntervalUpDown("hoursDown","btnClass", "hours", "down")); 
+    timer.graphics.addTouchMove(hoursDiv, "hours"); 
     timeDiv.appendChild(hoursDiv);
 
     var minutesDiv = document.createElement("div");
@@ -69,6 +71,7 @@ Module.register("MMM-MyTimerModule",{
     minutesDiv.appendChild(timer.graphics.addButtonIntervalUpDown("minutesUp","btnClass", "minutes", "up")); 
     minutesDiv.appendChild(timer.graphics.addTimeSpan("minutes",timer.interval.minutes, "timeDisplay", true));
     minutesDiv.appendChild(timer.graphics.addButtonIntervalUpDown("minutesDown","btnClass", "minutes", "down")); 
+    timer.graphics.addTouchMove(minutesDiv, "minutes"); 
     timeDiv.appendChild(minutesDiv);
 
 
@@ -78,6 +81,7 @@ Module.register("MMM-MyTimerModule",{
     secondsDiv.appendChild(timer.graphics.addButtonIntervalUpDown("secondsUp","btnClass", "seconds", "up")); 
     secondsDiv.appendChild(timer.graphics.addTimeIndicator("seconds",timer.interval.seconds, "timeDisplay", true));
     secondsDiv.appendChild(timer.graphics.addButtonIntervalUpDown("secondsDown","btnClass", "seconds", "down")); 
+    timer.graphics.addTouchMove(secondsDiv, "seconds"); 
     timeDiv.appendChild(secondsDiv);
     
 
@@ -91,6 +95,8 @@ Module.register("MMM-MyTimerModule",{
   start: function() {
     Log.info("Starting module: " + this.name);
     timer.audio.alarmSound = this.config.alarmSound;   
+    
+    
   },
     
     
@@ -133,6 +139,7 @@ Module.register("MMM-MyTimerModule",{
     var tempID = intTimer.id; 
     intTimer.id = ""; 
     intTimer.audio.play(); 
+    
     clearInterval(tempID); 
 
   },
@@ -182,6 +189,12 @@ Module.register("MMM-MyTimerModule",{
     }
     
 
+  },
+  this.setInterval = function(value, unit){
+    console.log(value, unit); 
+    if (value >= 0 && value <= 59)
+    intTimer.interval[unit] = value; 
+    intTimer.graphics.update(); 
   },
   //---------------------------------------------- Graphic Functions
   this.graphics = {
@@ -266,6 +279,7 @@ Module.register("MMM-MyTimerModule",{
       div.className = className; 
       div.appendChild(timer.graphics.addTimeIndicator(id, content, className)); 
       div.appendChild(timer.graphics.addDoublePoint(className)); 
+      
       return div; 
 
     },
@@ -273,8 +287,7 @@ Module.register("MMM-MyTimerModule",{
       var span = document.createElement("span"); 
       span.id= id; 
       span.className = className;  
-      span.innerHTML = content; 
-      
+      span.innerHTML = content;     
       intTimer.timeIndicator[id] = span; 
       return span; 
     }, 
@@ -314,6 +327,17 @@ Module.register("MMM-MyTimerModule",{
       button.appendChild(image); 
       button.disabled =true; 
       return button; 
+    }, 
+    addTouchMove: function(element, unit){
+      element.addEventListener("touchmove", function(e){
+        
+        if (intTimer.id == ""){
+          var actRatio = e.changedTouches[0].clientY/window.innerHeight;
+          var value = Math.floor((actRatio) *59); 
+          console.log(actRatio, value); 
+          intTimer.setInterval(value, unit);
+        }
+      });
     }
   }, 
   this.audio = {
@@ -341,4 +365,3 @@ Module.register("MMM-MyTimerModule",{
     }
   };
 } 
-
