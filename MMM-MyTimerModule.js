@@ -41,10 +41,12 @@ Module.register("MMM-MyTimerModule",{
     wrapper.className = "moduleDiv";
     wrapper.id = "MyKitchenTimerWrapper";
     //wrapper.appendChild(generateSpan("", "MyTimer", ""));
+
     var buttonDiv = document.createElement("div");
     buttonDiv.className="buttonDiv";
     buttonDiv.appendChild(timer.graphics.addStartButton("startButton", "start Timer", "btnClass"));
     buttonDiv.appendChild(timer.graphics.addStopButton("stopButton", "stop Timer", "btnClass"));
+    buttonDiv.appendChild(timer.graphics.addMuteButton("muteButton", "btnClass")); 
     wrapper.appendChild(buttonDiv); 
     
     var timeDiv = document.createElement("div");
@@ -128,7 +130,7 @@ Module.register("MMM-MyTimerModule",{
   },
   this._end = function(){
     console.log("timer ended");
-    intTimer.graphics.setTimerStopped();
+    intTimer.graphics.setTimerEnded();
     var tempID = intTimer.id; 
     intTimer.id = ""; 
     intTimer.audio.play(); 
@@ -196,6 +198,7 @@ Module.register("MMM-MyTimerModule",{
     setTimerRunning: function(){
       var startButton = document.getElementById("startButton");
       var stopButton = document.getElementById("stopButton");
+      var muteButton = document.getElementById("muteButton");
       var buttonsArray = document.getElementById("timeDiv").getElementsByClassName("btnClass"); 
       var el; 
       for (el in buttonsArray){
@@ -203,18 +206,31 @@ Module.register("MMM-MyTimerModule",{
       }
       startButton.disabled = true;
       stopButton.disabled = false; 
+      muteButton.disabled = true;
     },
     setTimerStopped: function(){
       var startButton = document.getElementById("startButton");
       var stopButton = document.getElementById("stopButton");
+      var muteButton = document.getElementById("muteButton");
       var buttonsArray = document.getElementById("timeDiv").getElementsByClassName("btnClass"); 
       var el; 
       for (el in buttonsArray){
         buttonsArray[el].disabled = false;
       }
       startButton.disabled = false; 
-      stopButton.disabled = true; 
+      stopButton.disabled = true;
+      muteButton.disabled = true; 
     },
+    setTimerEnded: function(){
+      var startButton = document.getElementById("startButton");
+      var stopButton = document.getElementById("stopButton");
+      var muteButton = document.getElementById("muteButton");
+
+      startButton.disabled = true; 
+      stopButton.disabled = true;
+      muteButton.disabled = false; 
+
+    }, 
     addStartButton: function(id, content, className){
       var button =intTimer.graphics._addButton(id, content, className); 
       button.addEventListener("click", intTimer.start);
@@ -295,9 +311,9 @@ Module.register("MMM-MyTimerModule",{
       button.addEventListener("click", intTimer.audio.stop); 
       var image = document.createElement("i");    
       button.innerHTML = ""; 
-      image.className = "fas fa-mute-circle";
+      image.className = "fas fa-volume-mute";
       button.appendChild(image); 
-      //button.disabled = true; 
+      button.disabled =true; 
       return button; 
     }
   }, 
@@ -313,13 +329,12 @@ Module.register("MMM-MyTimerModule",{
       audio.setAttribute('autoplay', true);
       audio.setAttribute('loop', true);
       intTimer.audio.active = true; 
-      wrapper.appendChild(intTimer.graphics.addMuteButton("muteButtonId", "mute", "btnClass")); 
       wrapper.appendChild(audio);
     },
     stop: function(){
       if(intTimer.audio.active){
         document.getElementById('MyKitchenTimerSound').remove();
-        document.getElementById('muteButtonId').remove();
+        intTimer.graphics.setTimerStopped();  
         intTimer.audio.active = false; 
       }
     }

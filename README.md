@@ -1,3 +1,14 @@
+
+-------------------------------
+for config.js
+
+{
+  module: "MMM-MyTimerModule",
+  header: "Küchenuhr",
+  position: "top_right"
+},  
+
+
 MIT License
 
 Copyright (c) 2020 Lucker25
