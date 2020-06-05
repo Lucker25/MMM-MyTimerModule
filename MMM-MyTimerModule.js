@@ -12,6 +12,7 @@
  * - sound when finished
  *  - via speakers 
  *  - via sonos 
+ * jshint esversion: 6
  */
 var timer = new timerModule(); 
 Module.register("MMM-MyTimerModule",{
@@ -37,7 +38,8 @@ Module.register("MMM-MyTimerModule",{
   	// Override dom generator.
 	getDom: function() {
 		var wrapper = document.createElement("div");
-		wrapper.className = "moduleDiv";
+    wrapper.className = "moduleDiv";
+    wrapper.id = "MyKitchenTimerWrapper";
     //wrapper.appendChild(generateSpan("", "MyTimer", ""));
     var buttonDiv = document.createElement("div");
     buttonDiv.className="buttonDiv";
@@ -74,18 +76,18 @@ Module.register("MMM-MyTimerModule",{
     secondsDiv.appendChild(timer.graphics.addTimeIndicator("seconds",timer.interval.seconds, "timeDisplay", true));
     secondsDiv.appendChild(timer.graphics.addButtonIntervalUpDown("secondsDown","btnClass", "seconds", "down")); 
     timeDiv.appendChild(secondsDiv);
-
     
 
 
     wrapper.appendChild(timeDiv); 
     
     console.log(wrapper);
-    tM.graphics.update();
+    intTimer.graphics.update();
 		return wrapper;
   },
   start: function() {
     Log.info("Starting module: " + this.name);
+    
 
   },
     
@@ -93,87 +95,98 @@ Module.register("MMM-MyTimerModule",{
 });
 
  function timerModule(){
+  intTimer = this,
   this.id = "",
   this.interval = {
     hours: 0, 
-    minutes: 5,
-    seconds: 0,
+    minutes: 0,
+    seconds: 3
   },
   this.duration = 0, 
-  tM = this,
-  tM.timeIndicator = {},
+  
+  intTimer.timeIndicator = {},
   this.start = function () {
-    tM.duration = (tM.interval.hours * 3600) + (tM.interval.minutes*60)+tM.interval.seconds;
-    if (tM.duration == 0 || tM.id != "") return; 
-    tM.graphics.setTimerRunning(); 
-    tM.id = setInterval(function(){
-      tM.duration--; 
-      tM.interval.hours = parseInt(tM.duration /(60*60), 10);
-      tM.interval.minutes = parseInt((tM.duration/60)%60, 10);
-      tM.interval.seconds = parseInt(tM.duration % 60, 10);
-      tM.graphics.update(); 
-      
-      if (tM.duration <= 0){
-        console.log("timer ended");
-        tM.graphics.setTimerStopped();
-        clearInterval(tM.id); 
+    intTimer.duration = (intTimer.interval.hours * 3600) + (intTimer.interval.minutes*60)+intTimer.interval.seconds;
+    if (intTimer.duration == 0 || intTimer.id != "") return; 
+    intTimer.graphics.setTimerRunning(); 
+    intTimer.id = setInterval(function(){
+      intTimer.tick(); 
+      if (intTimer.duration <= 0){
+        intTimer._end(); 
         
       }
     }, 1000); 
-    console.log("start timer", tM.id, tM.interval); 
+    console.log("start timer", intTimer.id, intTimer.interval); 
+  },
+  this.tick = function(){
+      intTimer.duration--; 
+      intTimer.interval.hours = parseInt(intTimer.duration /(60*60), 10);
+      intTimer.interval.minutes = parseInt((intTimer.duration/60)%60, 10);
+      intTimer.interval.seconds = parseInt(intTimer.duration % 60, 10);
+      intTimer.graphics.update(); 
+
+  },
+  this._end = function(){
+    console.log("timer ended");
+    intTimer.graphics.setTimerStopped();
+    var tempID = intTimer.id; 
+    intTimer.id = ""; 
+    intTimer.audio.play(); 
+    clearInterval(tempID); 
+
   },
   this.pause= function () {
     
   },
   this.stop = function () { 
-    console.log("stop timer", tM.id);
-    clearInterval(tM.id);
-    tM.id = ""; 
-    tM.graphics.setTimerStopped(); 
+    console.log("stop timer", intTimer.id);
+    clearInterval(intTimer.id);
+    intTimer.id = ""; 
+    intTimer.graphics.setTimerStopped(); 
   },
   this.setTimer = function(hours, minutes, seconds){
-    tM.interval.hours = hours; 
-    tM.interval.minutes = minutes; 
-    tM.interval.seconds = seconds; 
-    tM.graphics.update();
+    intTimer.interval.hours = hours; 
+    intTimer.interval.minutes = minutes; 
+    intTimer.interval.seconds = seconds; 
+    intTimer.graphics.update();
   },
   this.changeInterval = function(unit, dir){
     console.log(unit, dir); 
     if (dir == "up"){
-      if (tM.interval[unit]<59)
-        tM.interval[unit] += 1; 
+      if (intTimer.interval[unit]<59)
+        intTimer.interval[unit] += 1; 
       else
-        tM.interval[unit] = 0;
+        intTimer.interval[unit] = 0;
     }
     else if(dir =="down"){
-      if (tM.interval[unit]>0)
-        tM.interval[unit] -= 1; 
+      if (intTimer.interval[unit]>0)
+        intTimer.interval[unit] -= 1; 
       else
-        tM.interval[unit] = 59; 
+        intTimer.interval[unit] = 59; 
     }
     else 
       console.log(dir +" is wrong"); 
     
-  //  tM.correctInterval(); 
-    tM.graphics.update(); 
+  //  intTimer.correctInterval(); 
+    intTimer.graphics.update(); 
   },
   this.correctInterval = function(){
-    if (tM.interval.seconds >59){
-      tM.interval.seconds = 0; 
-      tM.interval.minutes++; 
+    if (intTimer.interval.seconds >59){
+      intTimer.interval.seconds = 0; 
+      intTimer.interval.minutes++; 
     }
-    if (tM.interval.minutes >59){
-      tM.interval.minutes = 0; 
-      tM.interval.hours++; 
+    if (intTimer.interval.minutes >59){
+      intTimer.interval.minutes = 0; 
+      intTimer.interval.hours++; 
     }
     
 
-  };
+  },
   //---------------------------------------------- Graphic Functions
   this.graphics = {
     update: function(){
-      for(var span in tM.timeIndicator) 
-        tM.timeIndicator[span].innerHTML = addZero(tM.interval[span]); 
+      for(var span in intTimer.timeIndicator) 
+        intTimer.timeIndicator[span].innerHTML = addZero(intTimer.interval[span]); 
       
       function addZero(value){
         return value < 10 ? "0" + value : value;
@@ -203,8 +216,8 @@ Module.register("MMM-MyTimerModule",{
       stopButton.disabled = true; 
     },
     addStartButton: function(id, content, className){
-      var button =tM.graphics._addButton(id, content, className); 
-      button.addEventListener("click", tM.start);
+      var button =intTimer.graphics._addButton(id, content, className); 
+      button.addEventListener("click", intTimer.start);
       var image = document.createElement("i");    
       button.innerHTML = ""; 
       image.className = "fas fa-play-circle";
@@ -212,8 +225,8 @@ Module.register("MMM-MyTimerModule",{
       return button; 
     },
     addStopButton: function(id, content, className){
-      var button =tM.graphics._addButton(id, content, className); 
-      button.addEventListener("click", tM.stop);
+      var button =intTimer.graphics._addButton(id, content, className); 
+      button.addEventListener("click", intTimer.stop);
       var image = document.createElement("i");    
       button.innerHTML = ""; 
       image.className = "fas fa-pause-circle";
@@ -247,7 +260,7 @@ Module.register("MMM-MyTimerModule",{
       span.className = className;  
       span.innerHTML = content; 
       
-      tM.timeIndicator[id] = span; 
+      intTimer.timeIndicator[id] = span; 
       return span; 
     }, 
     addDoublePoint: function(className){
@@ -257,9 +270,9 @@ Module.register("MMM-MyTimerModule",{
       return span; 
     }, 
     addButtonIntervalUpDown: function(id, className, unit, dir){
-      var button =tM.graphics._addButton(id, dir, className); 
+      var button =intTimer.graphics._addButton(id, dir, className); 
       button.addEventListener("click", function(){
-        tM.changeInterval(unit, dir);
+        intTimer.changeInterval(unit, dir);
       });
       var image = document.createElement("i"); 
 
@@ -277,5 +290,38 @@ Module.register("MMM-MyTimerModule",{
       return button; 
 
     },
+    addMuteButton: function(id, className){
+      var button=intTimer.graphics._addButton(id, "mute", className);
+      button.addEventListener("click", intTimer.audio.stop); 
+      var image = document.createElement("i");    
+      button.innerHTML = ""; 
+      image.className = "fas fa-mute-circle";
+      button.appendChild(image); 
+      //button.disabled = true; 
+      return button; 
+    }
+  }, 
+  this.audio = {
+    active: false,
+    play: function(){
+      var wrapper = document.getElementById('MyKitchenTimerWrapper');
+      var audio = document.createElement("audio");
+      var srcAudio = "modules/MMM-KitchenTimer/TimerAlarm.mp3";
+      audio.src = srcAudio;
+      audio.volume = 1;
+      audio.setAttribute('id', 'MyKitchenTimerSound');
+      audio.setAttribute('autoplay', true);
+      audio.setAttribute('loop', true);
+      intTimer.audio.active = true; 
+      wrapper.appendChild(intTimer.graphics.addMuteButton("muteButtonId", "mute", "btnClass")); 
+      wrapper.appendChild(audio);
+    },
+    stop: function(){
+      if(intTimer.audio.active){
+        document.getElementById('MyKitchenTimerSound').remove();
+        document.getElementById('muteButtonId').remove();
+        intTimer.audio.active = false; 
+      }
+    }
   };
 } 
