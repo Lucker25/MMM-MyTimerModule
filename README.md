@@ -2,10 +2,18 @@
 -------------------------------
 for config.js
 
+config options:
+  alarmSound: 
+    here you can specify any sound file this sound will be played when the timer ends. 
+
+
 {
   module: "MMM-MyTimerModule",
   header: "Küchenuhr",
-  position: "top_right"
+  position: "top_right", 
+  config:{
+    //alarmSound: "http://soundbible.com/grab.php?id=581&type=mp3"
+  }
 },  
 
 

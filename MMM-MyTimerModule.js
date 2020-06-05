@@ -15,11 +15,12 @@
  * jshint esversion: 6
  */
 var timer = new timerModule(); 
-Module.register("MMM-MyTimerModule",{
 
+Module.register("MMM-MyTimerModule",{
+  
 	// Default module config.
 	defaults: {
-    text: "Hello World!", 
+    alarmSound: "http://soundbible.com/grab.php?id=529&type=mp3", 
   },
 	getTemplate: function () {
 		return "MMM-MyTimerModule.njk";
@@ -89,8 +90,7 @@ Module.register("MMM-MyTimerModule",{
   },
   start: function() {
     Log.info("Starting module: " + this.name);
-    
-
+    timer.audio.alarmSound = this.config.alarmSound;   
   },
     
     
@@ -105,7 +105,6 @@ Module.register("MMM-MyTimerModule",{
     seconds: 3
   },
   this.duration = 0, 
-  
   intTimer.timeIndicator = {},
   this.start = function () {
     intTimer.duration = (intTimer.interval.hours * 3600) + (intTimer.interval.minutes*60)+intTimer.interval.seconds;
@@ -319,10 +318,12 @@ Module.register("MMM-MyTimerModule",{
   }, 
   this.audio = {
     active: false,
+    alarmSound: "",
     play: function(){
       var wrapper = document.getElementById('MyKitchenTimerWrapper');
       var audio = document.createElement("audio");
-      var srcAudio = "modules/MMM-KitchenTimer/TimerAlarm.mp3";
+
+      var srcAudio = this.alarmSound; //"http://soundbible.com/grab.php?id=529&type=mp3"; //"http://soundbible.com/grab.php?id=2061&type=mp3"; //"modules/MMM-KitchenTimer/TimerAlarm.mp3";
       audio.src = srcAudio;
       audio.volume = 1;
       audio.setAttribute('id', 'MyKitchenTimerSound');
@@ -340,3 +341,4 @@ Module.register("MMM-MyTimerModule",{
     }
   };
 } 
+
