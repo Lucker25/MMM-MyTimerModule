@@ -101,7 +101,7 @@ Module.register("MMM-MyTimerModule",{
     
     
 });
-
+ //
  function timerModule(){
   intTimer = this,
   this.id = "",
