@@ -14,25 +14,13 @@
  *  - via sonos 
  * jshint esversion: 6
  */
-var timer = new timerModule(); 
-
 
 Module.register("MMM-MyTimerModule",{
-  
-	// Default module config.
+  // Default module config.
 	defaults: {
-    alarmSound: "http://soundbible.com/grab.php?id=529&type=mp3", 
+    alarmSound: "http://soundbible.com/grab.php?id=529&type=mp3",    
   },
-	getTemplate: function () {
-		return "MMM-MyTimerModule.njk";
-	},
 
-	getTemplateData: function () {
-		return this.config;
-  },
-  getScripts: function() {
-		return ["helperScript.js"];
-	},
 	// Define styles.
 	getStyles: function() {
 		return ["MMM-MyTimerModule.css"];
@@ -46,9 +34,9 @@ Module.register("MMM-MyTimerModule",{
 
     var buttonDiv = document.createElement("div");
     buttonDiv.className="buttonDiv";
-    buttonDiv.appendChild(timer.graphics.addStartButton("startButton", "start Timer", "btnClass"));
-    buttonDiv.appendChild(timer.graphics.addStopButton("stopButton", "stop Timer", "btnClass"));
-    buttonDiv.appendChild(timer.graphics.addMuteButton("muteButton", "btnClass")); 
+    buttonDiv.appendChild(this.graphics.addStartButton("startButton", "start Timer", "btnClass"));
+    buttonDiv.appendChild(this.graphics.addStopButton("stopButton", "stop Timer", "btnClass"));
+    buttonDiv.appendChild(this.graphics.addMuteButton("muteButton", "btnClass")); 
     wrapper.appendChild(buttonDiv); 
     
     var timeDiv = document.createElement("div");
@@ -59,29 +47,29 @@ Module.register("MMM-MyTimerModule",{
     var hoursDiv = document.createElement("div");
     hoursDiv.className="horizontalDiv";
     hoursDiv.id = hoursDiv.className;
-    hoursDiv.appendChild(timer.graphics.addButtonIntervalUpDown("hoursUp","btnClass", "hours", "up")); 
-    hoursDiv.appendChild(timer.graphics.addTimeSpan("hours",timer.interval.hours, "timeDisplay", true));
-    hoursDiv.appendChild(timer.graphics.addButtonIntervalUpDown("hoursDown","btnClass", "hours", "down")); 
-    timer.graphics.addTouchMove(hoursDiv, "hours"); 
+    hoursDiv.appendChild(this.graphics.addButtonIntervalUpDown("hoursUp","btnClass", "hours", "up")); 
+    hoursDiv.appendChild(this.graphics.addTimeSpan("hours",this.state.hours, "timeDisplay", true));
+    hoursDiv.appendChild(this.graphics.addButtonIntervalUpDown("hoursDown","btnClass", "hours", "down")); 
+    this.graphics.addTouchMove(hoursDiv, "hours"); 
     timeDiv.appendChild(hoursDiv);
 
     var minutesDiv = document.createElement("div");
     minutesDiv.className="horizontalDiv";
     minutesDiv.id = minutesDiv.className;
-    minutesDiv.appendChild(timer.graphics.addButtonIntervalUpDown("minutesUp","btnClass", "minutes", "up")); 
-    minutesDiv.appendChild(timer.graphics.addTimeSpan("minutes",timer.interval.minutes, "timeDisplay", true));
-    minutesDiv.appendChild(timer.graphics.addButtonIntervalUpDown("minutesDown","btnClass", "minutes", "down")); 
-    timer.graphics.addTouchMove(minutesDiv, "minutes"); 
+    minutesDiv.appendChild(this.graphics.addButtonIntervalUpDown("minutesUp","btnClass", "minutes", "up")); 
+    minutesDiv.appendChild(this.graphics.addTimeSpan("minutes",this.state.minutes, "timeDisplay", true));
+    minutesDiv.appendChild(this.graphics.addButtonIntervalUpDown("minutesDown","btnClass", "minutes", "down")); 
+    this.graphics.addTouchMove(minutesDiv, "minutes"); 
     timeDiv.appendChild(minutesDiv);
 
 
     var secondsDiv = document.createElement("div");
     secondsDiv.className="horizontalDiv";
     secondsDiv.id = secondsDiv.className;
-    secondsDiv.appendChild(timer.graphics.addButtonIntervalUpDown("secondsUp","btnClass", "seconds", "up")); 
-    secondsDiv.appendChild(timer.graphics.addTimeIndicator("seconds",timer.interval.seconds, "timeDisplay", true));
-    secondsDiv.appendChild(timer.graphics.addButtonIntervalUpDown("secondsDown","btnClass", "seconds", "down")); 
-    timer.graphics.addTouchMove(secondsDiv, "seconds"); 
+    secondsDiv.appendChild(this.graphics.addButtonIntervalUpDown("secondsUp","btnClass", "seconds", "up")); 
+    secondsDiv.appendChild(this.graphics.addTimeIndicator("seconds",this.state.seconds, "timeDisplay", true));
+    secondsDiv.appendChild(this.graphics.addButtonIntervalUpDown("secondsDown","btnClass", "seconds", "down")); 
+    this.graphics.addTouchMove(secondsDiv, "seconds"); 
     timeDiv.appendChild(secondsDiv);
     
 
@@ -89,120 +77,42 @@ Module.register("MMM-MyTimerModule",{
     wrapper.appendChild(timeDiv); 
     
     console.log(wrapper);
-    intTimer.graphics.update();
 		return wrapper;
   },
   start: function() {
-    Log.info("Starting module: " + this.name);
-    timer.audio.alarmSound = this.config.alarmSound;   
-    
+    let that = this; 
+    Log.info("Starting module: " + this.name);   
+    setTimeout(function(){
+      that.graphics.updateGraphics(that.state);
+    },0)
     
   },
-    
-    
-});
- //
- function timerModule(){
-  intTimer = this,
-  this.id = "",
-  this.interval = {
-    hours: 0, 
-    minutes: 0,
+  state: {
+    value: "STOPPED", 
+    hours: 1,
+    minutes: 2,
     seconds: 3
-  },
-  this.duration = 0, 
-  intTimer.timeIndicator = {},
-  this.start = function () {
-    intTimer.duration = (intTimer.interval.hours * 3600) + (intTimer.interval.minutes*60)+intTimer.interval.seconds;
-    if (intTimer.duration == 0 || intTimer.id != "") return; 
-    intTimer.graphics.setTimerRunning(); 
-    intTimer.id = setInterval(function(){
-      intTimer.tick(); 
-      if (intTimer.duration <= 0){
-        intTimer._end(); 
-        
+  }, 
+ 
+  graphics: {
+    timeIndicator: new Object(),
+    //---------------------------------------------- Graphic Functions
+    updateGraphics: function(state){
+      for(var span in this.timeIndicator) 
+        this.timeIndicator[span].innerHTML = addZero(state[span]); 
+
+      if(state.value === "STOPPED"){
+        this.setTimerStopped(); 
       }
-    }, 1000); 
-    console.log("start timer", intTimer.id, intTimer.interval); 
-  },
-  this.tick = function(){
-      intTimer.duration--; 
-      intTimer.interval.hours = parseInt(intTimer.duration /(60*60), 10);
-      intTimer.interval.minutes = parseInt((intTimer.duration/60)%60, 10);
-      intTimer.interval.seconds = parseInt(intTimer.duration % 60, 10);
-      intTimer.graphics.update(); 
-
-  },
-  this._end = function(){
-    console.log("timer ended");
-    intTimer.graphics.setTimerEnded();
-    var tempID = intTimer.id; 
-    intTimer.id = ""; 
-    intTimer.audio.play(); 
-    
-    clearInterval(tempID); 
-
-  },
-  this.pause= function () {
-    
-  },
-  this.stop = function () { 
-    console.log("stop timer", intTimer.id);
-    clearInterval(intTimer.id);
-    intTimer.id = ""; 
-    intTimer.graphics.setTimerStopped(); 
-  },
-  this.setTimer = function(hours, minutes, seconds){
-    intTimer.interval.hours = hours; 
-    intTimer.interval.minutes = minutes; 
-    intTimer.interval.seconds = seconds; 
-    intTimer.graphics.update();
-  },
-  this.changeInterval = function(unit, dir){
-    console.log(unit, dir); 
-    if (dir == "up"){
-      if (intTimer.interval[unit]<59)
-        intTimer.interval[unit] += 1; 
-      else
-        intTimer.interval[unit] = 0;
-    }
-    else if(dir =="down"){
-      if (intTimer.interval[unit]>0)
-        intTimer.interval[unit] -= 1; 
-      else
-        intTimer.interval[unit] = 59; 
-    }
-    else 
-      console.log(dir +" is wrong"); 
-    
-  //  intTimer.correctInterval(); 
-    intTimer.graphics.update(); 
-  },
-  this.correctInterval = function(){
-    if (intTimer.interval.seconds >59){
-      intTimer.interval.seconds = 0; 
-      intTimer.interval.minutes++; 
-    }
-    if (intTimer.interval.minutes >59){
-      intTimer.interval.minutes = 0; 
-      intTimer.interval.hours++; 
-    }
-    
-
-  },
-  this.setInterval = function(value, unit){
-    console.log(value, unit); 
-    if (value >= 0 && value <= 59)
-    intTimer.interval[unit] = value; 
-    intTimer.graphics.update(); 
-  },
-  //---------------------------------------------- Graphic Functions
-  this.graphics = {
-    update: function(){
-      for(var span in intTimer.timeIndicator) 
-        intTimer.timeIndicator[span].innerHTML = addZero(intTimer.interval[span]); 
+      else if(state.value === "ENDED"){
+        this.setTimerEnded();
+      }
+      else if (state.value === "RUNNING"){
+        this.setTimerRunning(); 
+      }
       
       function addZero(value){
+        console.log(value)
         return value < 10 ? "0" + value : value;
       }
 
@@ -244,8 +154,8 @@ Module.register("MMM-MyTimerModule",{
 
     }, 
     addStartButton: function(id, content, className){
-      var button =intTimer.graphics._addButton(id, content, className); 
-      button.addEventListener("click", intTimer.start);
+      var button =this._addButton(id, content, className); 
+      //button.addEventListener("click", intTimer.start); // look @ this again
       var image = document.createElement("i");    
       button.innerHTML = ""; 
       image.className = "fas fa-play-circle";
@@ -253,8 +163,8 @@ Module.register("MMM-MyTimerModule",{
       return button; 
     },
     addStopButton: function(id, content, className){
-      var button =intTimer.graphics._addButton(id, content, className); 
-      button.addEventListener("click", intTimer.stop);
+      var button =this._addButton(id, content, className); 
+      //button.addEventListener("click", intTimer.stop);
       var image = document.createElement("i");    
       button.innerHTML = ""; 
       image.className = "fas fa-pause-circle";
@@ -277,8 +187,8 @@ Module.register("MMM-MyTimerModule",{
       var div = document.createElement("div"); 
       div.id= id; 
       div.className = className; 
-      div.appendChild(timer.graphics.addTimeIndicator(id, content, className)); 
-      div.appendChild(timer.graphics.addDoublePoint(className)); 
+      div.appendChild(this.addTimeIndicator(id, content, className)); 
+      div.appendChild(this.addDoublePoint(className)); 
       
       return div; 
 
@@ -288,7 +198,7 @@ Module.register("MMM-MyTimerModule",{
       span.id= id; 
       span.className = className;  
       span.innerHTML = content;     
-      intTimer.timeIndicator[id] = span; 
+      this.timeIndicator[id] = span; 
       return span; 
     }, 
     addDoublePoint: function(className){
@@ -298,9 +208,9 @@ Module.register("MMM-MyTimerModule",{
       return span; 
     }, 
     addButtonIntervalUpDown: function(id, className, unit, dir){
-      var button =intTimer.graphics._addButton(id, dir, className); 
+      var button =this._addButton(id, dir, className); 
       button.addEventListener("click", function(){
-        intTimer.changeInterval(unit, dir);
+        //intTimer.changeInterval(unit, dir);
       });
       var image = document.createElement("i"); 
 
@@ -319,8 +229,8 @@ Module.register("MMM-MyTimerModule",{
 
     },
     addMuteButton: function(id, className){
-      var button=intTimer.graphics._addButton(id, "mute", className);
-      button.addEventListener("click", intTimer.audio.stop); 
+      var button=this._addButton(id, "mute", className);
+      //button.addEventListener("click", intTimer.audio.stop); 
       var image = document.createElement("i");    
       button.innerHTML = ""; 
       image.className = "fas fa-volume-mute";
@@ -339,29 +249,8 @@ Module.register("MMM-MyTimerModule",{
         }
       });
     }
-  }, 
-  this.audio = {
-    active: false,
-    alarmSound: "",
-    play: function(){
-      var wrapper = document.getElementById('MyKitchenTimerWrapper');
-      var audio = document.createElement("audio");
-
-      var srcAudio = this.alarmSound; //"http://soundbible.com/grab.php?id=529&type=mp3"; //"http://soundbible.com/grab.php?id=2061&type=mp3"; //"modules/MMM-KitchenTimer/TimerAlarm.mp3";
-      audio.src = srcAudio;
-      audio.volume = 1;
-      audio.setAttribute('id', 'MyKitchenTimerSound');
-      audio.setAttribute('autoplay', true);
-      audio.setAttribute('loop', true);
-      intTimer.audio.active = true; 
-      wrapper.appendChild(audio);
-    },
-    stop: function(){
-      if(intTimer.audio.active){
-        document.getElementById('MyKitchenTimerSound').remove();
-        intTimer.graphics.setTimerStopped();  
-        intTimer.audio.active = false; 
-      }
-    }
-  };
-} 
+  }
+   
+});
+ //
+ 
