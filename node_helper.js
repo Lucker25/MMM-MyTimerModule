@@ -31,18 +31,30 @@ module.exports = NodeHelper.create({
   // Timer state 
   state: {
     value: "STOPPED", 
-    hours: 59,
-    minutes: 59,
-    seconds: 59
+    hours: 0,
+    minutes: 0,
+    seconds: 20
   }, 
+  timer: {
+    duration: 0,
+    id: ""
+  },
+  tick: function(){
+    this.timer.duration--; 
+    this.state.hours = parseInt(this.timer.duration /(60*60), 10);
+    this.state.minutes = parseInt((this.timer.duration/60)%60, 10);
+    this.state.seconds = parseInt(this.timer.duration % 60, 10);
+    this.sendState(); 
+    
+  },
   // timer functionality
   setState: function(state){
     if (state.value == "START"){
       //start && set RUNNUNG
-      this.timer.start(state); 
+      this.startTimer(state); 
     }
     else if (state.value == "STOP"){
-      //stop && set STOPPED
+      this.stopTimer(state);
     }
     else if (state.value == "MUTE"){
 
@@ -55,21 +67,39 @@ module.exports = NodeHelper.create({
     let that = this; 
     this.sendSocketNotification("sendState", that.state); 
   },
-  timer:{
-    start: function(){
+  startTimer: function(newState){
+    this.state = newState; 
+    this.state.value = "RUNNING";
+    this.timer.duration = (this.state.hours * 3600) + (this.state.minutes*60)+this.state.seconds;
+    this.runningTimer(); 
+    this.sendState(); 
+  }, 
+  stopTimer: function(){
+    let that = this; 
+    this.state.value = "STOPPED";
+    clearInterval(that.timer.id); 
+    that.timer.id = ""; 
+    this.sendState(); 
 
-    }, 
-    stop: function(){
+  },
+  muteTimer: function(){
 
-    },
-    mute: function(){
-
-    }
-
-  }
-  
-  
-
-
-		
+  },
+  endTimer: function(){
+    let that = this; 
+    this.state.value = "ENDED";
+    clearInterval(that.timer.id); 
+    that.timer.id = ""; 
+    this.sendState(); 
+  },
+  runningTimer: function(){
+    let that = this; 
+    that.timer.id = setInterval(function(){
+      that.tick(); 
+      if (that.timer.duration <= 0){
+        that.endTimer(); 
+        
+      }
+    }, 1000); 
+  }		
 });

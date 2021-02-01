@@ -182,6 +182,7 @@ Module.register("MMM-MyTimerModule",{
     return button; 
   },
   addStopButton: function(id, content, className){
+    let that = this; 
     var button =this._addButton(id, content, className); 
     button.addEventListener("click", function(e){
       that.setServerState("STOP") 
