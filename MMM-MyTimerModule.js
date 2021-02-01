@@ -91,11 +91,28 @@ Module.register("MMM-MyTimerModule",{
     Log.info("Starting module: " + this.name);   
     setTimeout(function(){
       that.updateGraphics();
-    },0)
+      that.sendSocketNotification("getState", "")
+    },0);
     
   },
+  socketNotificationReceived: function (notification, payload) {
+    if (notification == "LOG"){
+      console.warn("SERVER LOG", payload)
+    }
+    if (notification == "sendState"){
+      this.state = payload; 
+      this.updateGraphics(); 
+    }
+	},
 
-  timeIndicator: new Object(),
+  timeIndicator: {},
+
+  //---------------------------------------------- set server state
+  setServerState(value){
+    let that = this; 
+    that.state.value = value; 
+    that.sendSocketNotification("setState", that.state)
+  },
   //---------------------------------------------- Graphic Functions
   updateGraphics: function(){
     for(var span in this.timeIndicator) 
@@ -112,7 +129,6 @@ Module.register("MMM-MyTimerModule",{
     }
     
     function addZero(value){
-      console.log(value)
       return value < 10 ? "0" + value : value;
     }
 
@@ -154,8 +170,11 @@ Module.register("MMM-MyTimerModule",{
 
   }, 
   addStartButton: function(id, content, className){
+    let that = this; 
     var button =this._addButton(id, content, className); 
-    //button.addEventListener("click", intTimer.start); // look @ this again
+    button.addEventListener("click", function(e){
+      that.setServerState("START") 
+    });
     var image = document.createElement("i");    
     button.innerHTML = ""; 
     image.className = "fas fa-play-circle";
@@ -164,7 +183,9 @@ Module.register("MMM-MyTimerModule",{
   },
   addStopButton: function(id, content, className){
     var button =this._addButton(id, content, className); 
-    //button.addEventListener("click", intTimer.stop);
+    button.addEventListener("click", function(e){
+      that.setServerState("STOP") 
+    });
     var image = document.createElement("i");    
     button.innerHTML = ""; 
     image.className = "fas fa-pause-circle";
@@ -243,7 +264,6 @@ Module.register("MMM-MyTimerModule",{
   addTouchMove: function(element, unit){
     let that = this; 
     element.addEventListener("touchmove", function(e){
-      
       if (that.state.value !== "RUNNING"){
         var actRatio = e.changedTouches[0].clientY/window.innerHeight;
         var value = Math.floor((actRatio) *59); 
@@ -256,9 +276,9 @@ Module.register("MMM-MyTimerModule",{
   },
   checkLimits: function(value){
     if (value > 59)
-      value = 59
+      value = 59;
     if (value <0)
-      value = 0 
+      value = 0;
     return value; 
   }
 });
