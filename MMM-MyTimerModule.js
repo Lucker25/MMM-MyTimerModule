@@ -267,13 +267,28 @@ Module.register("MMM-MyTimerModule",{
   }, 
   addTouchMove: function(element, unit){
     let that = this; 
+    let lastY=0; 
     element.addEventListener("touchmove", function(e){
       if (that.state.value !== "RUNNING"){
-        var actRatio = e.changedTouches[0].clientY/window.innerHeight;
-        var value = Math.floor((actRatio) *59); 
-        console.log(actRatio, value); 
-        that.state[unit] = that.checkLimits(value); 
+        var currentY = e.changedTouches[0].clientY; 
+        tempState =that.state[unit]
+        if(currentY > lastY+5){
+          console.log("down")
+          tempState--; 
+          that.state[unit] = that.checkLimits(tempState); 
+          lastY = currentY; 
+        }else if(currentY < lastY-5){
+          console.log("up")
+          tempState++; 
+          that.state[unit] = that.checkLimits(tempState); 
+          lastY = currentY; 
+        }
+        
         that.updateGraphics(); 
+        
+        //console.log(actRatio, value); 
+        //that.state[unit] = that.checkLimits(value); 
+        //that.updateGraphics(); 
         //intTimer.setInterval(value, unit);
       }
     });
