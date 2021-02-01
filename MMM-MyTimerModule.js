@@ -253,8 +253,11 @@ Module.register("MMM-MyTimerModule",{
 
   },
   addMuteButton: function(id, className){
+    let that = this; 
     var button=this._addButton(id, "mute", className);
-    //button.addEventListener("click", intTimer.audio.stop); 
+    button.addEventListener("click", function(e){
+      that.setServerState("STOP") 
+    });
     var image = document.createElement("i");    
     button.innerHTML = ""; 
     image.className = "fas fa-volume-mute";

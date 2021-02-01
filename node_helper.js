@@ -94,11 +94,14 @@ module.exports = NodeHelper.create({
   },
   runningTimer: function(){
     let that = this; 
+    if (that.timer.duration <= 0){
+      that.stopTimer(); 
+      return; 
+    }
     that.timer.id = setInterval(function(){
       that.tick(); 
       if (that.timer.duration <= 0){
         that.endTimer(); 
-        
       }
     }, 1000); 
   }		
