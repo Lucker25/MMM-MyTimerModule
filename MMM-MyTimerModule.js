@@ -83,7 +83,6 @@ Module.register("MMM-MyTimerModule",{
 
     wrapper.appendChild(timeDiv); 
     
-    console.log(wrapper);
 		return wrapper;
   },
   start: function() {
@@ -269,16 +268,14 @@ Module.register("MMM-MyTimerModule",{
     let that = this; 
     let lastY=0; 
     element.addEventListener("touchmove", function(e){
-      if (that.state.value !== "RUNNING"){
+      if (that.state.value == "STOPPED"){
         var currentY = e.changedTouches[0].clientY; 
         tempState =that.state[unit]
         if(currentY > lastY+5){
-          console.log("down")
           tempState--; 
           that.state[unit] = that.checkLimits(tempState); 
           lastY = currentY; 
         }else if(currentY < lastY-5){
-          console.log("up")
           tempState++; 
           that.state[unit] = that.checkLimits(tempState); 
           lastY = currentY; 
