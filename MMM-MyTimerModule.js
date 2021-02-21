@@ -38,13 +38,14 @@ Module.register("MMM-MyTimerModule",{
     wrapper.className = "moduleDiv";
     wrapper.id = "MyKitchenTimerWrapper";
     //wrapper.appendChild(generateSpan("", "MyTimer", ""));
-
+    var timerDiv = document.createElement("div"); 
+    timerDiv.className = "timerDiv"
     var buttonDiv = document.createElement("div");
     buttonDiv.className="buttonDiv";
     buttonDiv.appendChild(this.addStartButton("startButton", "start Timer", "btnClass"));
     buttonDiv.appendChild(this.addStopButton("stopButton", "stop Timer", "btnClass"));
     buttonDiv.appendChild(this.addMuteButton("muteButton", "btnClass")); 
-    wrapper.appendChild(buttonDiv); 
+    timerDiv.appendChild(buttonDiv); 
     
     var timeDiv = document.createElement("div");
     timeDiv.className="timeDiv";
@@ -81,8 +82,16 @@ Module.register("MMM-MyTimerModule",{
     
 
 
-    wrapper.appendChild(timeDiv); 
-    
+    timerDiv.appendChild(timeDiv); 
+    wrapper.appendChild(timerDiv)
+    var sayButtondiv = document.createElement("div"); 
+    sayButtondiv.className="secondRow"; 
+    sayButtondiv.id=sayButtondiv.className; 
+    sayButtondiv.appendChild(this.addSayButton("sayButton1", "Der Timer ist zu Ende", "btnClass", "fas fa-hourglass"));
+    sayButtondiv.appendChild(this.addSayButton("sayButton2", "Das Essen ist fertig", "btnClass", "fas fa-cookie-bite"));
+    sayButtondiv.appendChild(this.addSayButton("sayButton3", "Du solltest Feierabend machen", "btnClass", "fas fa-laptop-house"));
+
+    wrapper.appendChild(sayButtondiv)
 		return wrapper;
   },
   start: function() {
@@ -251,6 +260,18 @@ Module.register("MMM-MyTimerModule",{
     return button; 
 
   },
+  addSayButton: function(id, content, className, icon){
+    let that = this; 
+    var button =this._addButton(id, content, className); 
+    button.addEventListener("click", function(e){
+      that.setSayText(content);
+    });
+    var image = document.createElement("i");    
+    button.innerHTML = ""; 
+    image.className = icon;
+    button.appendChild(image); 
+    return button; 
+  },
   addMuteButton: function(id, className){
     let that = this; 
     var button=this._addButton(id, "mute", className);
@@ -296,6 +317,9 @@ Module.register("MMM-MyTimerModule",{
     if (value <0)
       value = 0;
     return value; 
+  }, 
+  setSayText: function(content){
+    this.sendSocketNotification("setText", content)
   }
 });
  

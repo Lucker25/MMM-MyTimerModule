@@ -7,6 +7,7 @@
 
 const NodeHelper = require("node_helper");
 const Log = require("../../js/logger");
+const request = require("request")
 
 module.exports = NodeHelper.create({
 	// Override start method.
@@ -17,18 +18,26 @@ module.exports = NodeHelper.create({
 
 	// Override socketNotificationReceived received.
 	socketNotificationReceived: function (notification, payload) {
-    this.sendSocketNotification("LOG", {notification: notification, payload: payload});
+    //this.sendSocketNotification("LOG", {notification: notification, payload: payload});
       if (notification === "getState"){
         this.sendSocketNotification("sendState", this.state);
       }
       else if(notification === "setState"){
         Log.log(notification, payload); 
         this.setState(payload); 
-
+      }
+      else if(notification ==="setText"){
+        this.say.text = payload; 
 
       }
 	},
   // Timer state 
+  say: {
+    text: "Du%20solltest%20feierabend%20machen",
+    lang: "de",
+    volume: "100",
+    zone: "Küche"
+  },
   state: {
     value: "STOPPED", 
     hours: 0,
@@ -39,6 +48,7 @@ module.exports = NodeHelper.create({
     duration: 0,
     id: ""
   },
+  muteTimerID : "",
   tick: function(){
     this.timer.duration--; 
     this.state.hours = parseInt(this.timer.duration /(60*60), 10);
@@ -57,7 +67,7 @@ module.exports = NodeHelper.create({
       this.stopTimer(state);
     }
     else if (state.value == "MUTE"){
-
+      clearInterval(that.muteTimerID); 
     }
     else{
       Log.error("STATE is not KNOWN"); 
@@ -78,7 +88,9 @@ module.exports = NodeHelper.create({
     let that = this; 
     this.state.value = "STOPPED";
     clearInterval(that.timer.id); 
+    clearInterval(that.muteTimerID);
     that.timer.id = ""; 
+    that.muteTimerID = "";
     this.sendState(); 
 
   },
@@ -90,6 +102,10 @@ module.exports = NodeHelper.create({
     this.state.value = "ENDED";
     clearInterval(that.timer.id); 
     that.timer.id = ""; 
+    request('http://raspberrypi:5005/'+that.say.zone+'/say/'+ that.say.text +'/'+that.say.lang+'/'+that.say.volume);
+    that.muteTimerID = setInterval(function(){
+      request('http://raspberrypi:5005/'+that.say.zone+'/say/'+ that.say.text +'/'+that.say.lang+'/'+that.say.volume);
+    },30000); 
     this.sendState(); 
   },
   runningTimer: function(){
