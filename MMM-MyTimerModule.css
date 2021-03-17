@@ -1,92 +1,88 @@
-.moduleDiv{
-  background-color:transparent;
+.MMM-MyTimerModule .moduleDiv {
+  background-color: transparent;
   display: flex;
+  margin-top: 5%;
   flex-direction: column;
   height: 100%;
   width: 100%;
 }
 
-.timerDiv{
-  background-color:transparent;
+.MMM-MyTimerModule .timerDiv {
+  background-color: transparent;
   display: flex;
   flex-direction: row;
   height: 100%;
   width: 100%;
-  
+  justify-content: space-evenly;
+  align-content: center;
 }
 
-.buttonDiv{
+.MMM-MyTimerModule .buttonDiv {
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
 }
 
-.secondRow{
+.MMM-MyTimerModule .secondRow {
   padding-top: 1rem;
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
 }
 
-.btnClass{
+.MMM-MyTimerModule .btnClass {
   text-transform: uppercase;
-  color: #646464; 
+  color: #646464;
   outline: none;
-  width: 8vw; 
-  height: 8vh; 
-  /*margin: 1vh 1vw;*/
-  box-shadow: 0;
-  border: none; 
+  padding: 0px;
+  border: none;
   background-color: transparent;
-  /*margin: 1vh 0.2vw; */
-  font-size: 4rem; 
+  font-size: 1.5em;
+  justify-content: center;
+  align-content: center;
 }
 
-#startButton:disabled{
+.MMM-MyTimerModule #startButton:disabled {
   display: none;
 }
-#stopButton:disabled{
+.MMM-MyTimerModule #stopButton:disabled {
   display: none;
 }
-#muteButton:disabled{
+.MMM-MyTimerModule #muteButton:disabled {
   display: none;
 }
 
-
-.btnClass:active{
+.MMM-MyTimerModule .btnClass:active {
   color: wheat;
 }
 
-.timeDiv{
-  display: flex; 
+.MMM-MyTimerModule .timeDiv {
+  display: flex;
   flex-direction: row;
   justify-content: center;
-  padding-top: 1rem;
+  /*padding-top: 1rem;*/
 }
-.timeDiv .timeDisplay{
+.MMM-MyTimerModule .timeDiv .timeDisplay {
   text-align: left;
-
-
 }
-.timeDiv .btnClass{
-  width: 4vw; 
+.MMM-MyTimerModule #seconds {
+  padding-right: 0.8vw;
+}
+.MMM-MyTimerModule .timeDiv .btnClass {
+  width: 4vw;
   margin-left: 0vw;
   padding-left: 0vw;
-  
-
 }
-.timeDiv .btnClass:disabled{
+.MMM-MyTimerModule .timeDiv .btnClass:disabled {
   display: none;
-
 }
 
-.horizontalDiv{
-  display: flex; 
+.MMM-MyTimerModule .horizontalDiv {
+  display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-.timeDisplay{
+.MMM-MyTimerModule .timeDisplay {
   font-size: 4rem;
-  
 }
