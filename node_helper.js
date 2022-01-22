@@ -8,6 +8,8 @@
 const NodeHelper = require("node_helper");
 const Log = require("../../js/logger");
 const request = require("request");
+const player = require('play-sound')(opts = {})
+
 
 module.exports = NodeHelper.create({
   // Override start method.
@@ -66,7 +68,9 @@ module.exports = NodeHelper.create({
     } else if (state.value == "STOP") {
       this.stopTimer(state);
     } else if (state.value == "MUTE") {
-      clearInterval(that.muteTimer.ID);
+      this.stopTimer(); 
+      //clearInterval(that.muteTimer.ID);
+      this.sendSocketNotification("MUTEALL", ""); 
     } else {
       Log.error("STATE is not KNOWN");
     }
@@ -98,29 +102,31 @@ module.exports = NodeHelper.create({
     this.state.value = "ENDED";
     clearInterval(that.timer.id);
     that.timer.id = "";
-    request(
-      "http://raspberrypi:5005/" +
-        that.say.zone +
-        "/say/" +
-        that.say.text +
-        "/" +
-        that.say.lang +
-        "/" +
-        that.say.volume
-    );
+    sendTextToSonos();
     that.muteTimer.ID = setInterval(function () {
-      request(
-        "http://raspberrypi:5005/" +
+      sendTextToSonos();
+    }, that.muteTimer.duration);
+    this.sendState();
+
+    function sendTextToSonos(){
+      //let that = this; 
+      /*request(
+        "http://192.168.0.70:5005/" +
           that.say.zone +
           "/say/" +
           that.say.text +
           "/" +
           that.say.lang +
           "/" +
-          that.say.volume
-      );
-    }, that.muteTimer.duration);
-    this.sendState();
+          that.say.volume, function(error, response, body){
+            that.sendSocketNotification("LOG", {error: error, response: response, body:body}); 
+            if (error){
+              that.sendSocketNotification("PLAYALARMSOUND", true); 
+            }
+          }
+      );*/
+      that.sendSocketNotification("PLAYALARMSOUND", true); 
+    }
   },
   runningTimer: function () {
     let that = this;
@@ -134,5 +140,8 @@ module.exports = NodeHelper.create({
         that.endTimer();
       }
     }, 1000);
+  },
+  resetTimer: function (){
+
   }
 });

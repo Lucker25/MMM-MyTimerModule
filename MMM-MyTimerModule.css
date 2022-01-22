@@ -15,6 +15,7 @@
   width: 100%;
   justify-content: space-evenly;
   align-content: center;
+  padding-top: 0.8em;
 }
 
 .MMM-MyTimerModule .buttonDiv {
@@ -24,10 +25,15 @@
 }
 
 .MMM-MyTimerModule .secondRow {
-  padding-top: 1rem;
+  padding-top: 4.5vh;
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
+}
+.MMM-MyTimerModule .secondRow.noIcons {
+  padding-top: 0px;
+  display: none; 
+
 }
 
 .MMM-MyTimerModule .btnClass {
@@ -37,7 +43,7 @@
   padding: 0px;
   border: none;
   background-color: transparent;
-  font-size: 1.5em;
+  font-size: 1.6em;
   justify-content: center;
   align-content: center;
 }
@@ -84,5 +90,5 @@
 }
 
 .MMM-MyTimerModule .timeDisplay {
-  font-size: 4rem;
+  font-size: 1.6em;
 }
