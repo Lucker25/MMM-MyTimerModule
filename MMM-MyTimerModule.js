@@ -126,7 +126,6 @@ Module.register("MMM-MyTimerModule", {
       );
     secondsDiv.appendChild(
       this.addTimeSpan("seconds", this.state.seconds, "timeDisplay", true)
-      this.addTimeSpan("seconds", this.state.seconds, "timeDisplay", true)
     );
     if (this.config.showButtons)
       secondsDiv.appendChild(
@@ -464,6 +463,7 @@ Module.register("MMM-MyTimerModule", {
         }
 
         that.updateGraphics();
+      }
       }
     });
   },
