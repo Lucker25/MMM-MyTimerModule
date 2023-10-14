@@ -127,7 +127,6 @@ module.exports = NodeHelper.create({
           }
       );*/
       that.sendSocketNotification("PLAYALARMSOUND", true); 
-
     }
   },
   runningTimer: function () {

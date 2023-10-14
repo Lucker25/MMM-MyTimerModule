@@ -18,8 +18,10 @@ Module.register("MMM-MyTimerModule", {
   // Default module config.
   defaults: {
     alarmSound: '/home/pi/MagicMirror/alarmSound.mp3', // '/home/pi/MagicMirror/alarmSound.mp3'
+    alarmSound: '/home/pi/MagicMirror/alarmSound.mp3', // '/home/pi/MagicMirror/alarmSound.mp3'
     showButtons: false,
     sayButton1: {
+      show: false, 
       show: false, 
       text: "Der Timer ist zu Ende",
       icon: "fas fa-hourglass"
@@ -88,6 +90,7 @@ Module.register("MMM-MyTimerModule", {
       );
     this.addTouchMove(hoursDiv, "hours");
     this.addScrollWheel(hoursDiv, "hours");
+    this.addScrollWheel(hoursDiv, "hours");
     timeDiv.appendChild(hoursDiv);
 
     var minutesDiv = document.createElement("div");
@@ -111,6 +114,7 @@ Module.register("MMM-MyTimerModule", {
       );
     this.addTouchMove(minutesDiv, "minutes");
     this.addScrollWheel(minutesDiv, "minutes");
+    this.addScrollWheel(minutesDiv, "minutes");
     timeDiv.appendChild(minutesDiv);
 
     var secondsDiv = document.createElement("div");
@@ -121,6 +125,7 @@ Module.register("MMM-MyTimerModule", {
         this.addButtonIntervalUpDown("secondsUp", "btnClass", "seconds", "up")
       );
     secondsDiv.appendChild(
+      this.addTimeSpan("seconds", this.state.seconds, "timeDisplay", true)
       this.addTimeSpan("seconds", this.state.seconds, "timeDisplay", true)
     );
     if (this.config.showButtons)
@@ -134,6 +139,7 @@ Module.register("MMM-MyTimerModule", {
       );
     this.addTouchMove(secondsDiv, "seconds");
     this.addScrollWheel(secondsDiv, "seconds")
+    this.addScrollWheel(secondsDiv, "seconds")
     timeDiv.appendChild(secondsDiv);
 
     timerDiv.appendChild(timeDiv);
@@ -143,7 +149,40 @@ Module.register("MMM-MyTimerModule", {
     if (!(this.config.sayButton1.show && this.config.sayButton2.show && this.config.sayButton3.show)){
       sayButtondiv.className = "secondRow noIcons";
     }
+    if (!(this.config.sayButton1.show && this.config.sayButton2.show && this.config.sayButton3.show)){
+      sayButtondiv.className = "secondRow noIcons";
+    }
     sayButtondiv.id = sayButtondiv.className;
+    if (this.config.sayButton1.show){
+      sayButtondiv.appendChild(
+        this.addSayButton(
+          "sayButton1",
+          this.config.sayButton1.text,
+          "btnClass",
+          this.config.sayButton1.icon
+        )
+      );
+    }
+    if (this.config.sayButton2.show){
+      sayButtondiv.appendChild(
+        this.addSayButton(
+          "sayButton2",
+          this.config.sayButton2.text,
+          "btnClass",
+          this.config.sayButton2.icon
+        )
+      );
+    }
+    if (this.config.sayButton3.show){
+      sayButtondiv.appendChild(
+        this.addSayButton(
+          "sayButton3",
+          this.config.sayButton3.text,
+          "btnClass",
+          this.config.sayButton3.icon
+        )
+      );
+    }
     if (this.config.sayButton1.show){
       sayButtondiv.appendChild(
         this.addSayButton(
@@ -343,6 +382,7 @@ Module.register("MMM-MyTimerModule", {
     div.className = className;
     div.appendChild(this.addTimeIndicator(id, content, className));
     if (id != "seconds") div.appendChild(this.addDoublePoint(className));
+    if (id != "seconds") div.appendChild(this.addDoublePoint(className));
 
     return div;
   },
@@ -412,9 +452,11 @@ Module.register("MMM-MyTimerModule", {
         var currentY = e.changedTouches[0].clientY;
         tempState = that.state[unit];
         if (currentY > lastY + 8) {
+        if (currentY > lastY + 8) {
           tempState--;
           that.state[unit] = that.checkLimits(tempState);
           lastY = currentY;
+        } else if (currentY < lastY - 8) {
         } else if (currentY < lastY - 8) {
           tempState++;
           that.state[unit] = that.checkLimits(tempState);
@@ -431,7 +473,6 @@ Module.register("MMM-MyTimerModule", {
     element.addEventListener("wheel", function (e) {
       if (that.state.value == "STOPPED") {
         tempState = that.state[unit];
-        console.log(e)
         if(e.deltaY > 0){
           tempState--;
           that.state[unit] = that.checkLimits(tempState);
@@ -440,7 +481,6 @@ Module.register("MMM-MyTimerModule", {
         else{
           tempState++;
           that.state[unit] = that.checkLimits(tempState);
-
         }
         that.updateGraphics();
       }
