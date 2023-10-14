@@ -381,7 +381,6 @@ Module.register("MMM-MyTimerModule", {
     div.className = className;
     div.appendChild(this.addTimeIndicator(id, content, className));
     if (id != "seconds") div.appendChild(this.addDoublePoint(className));
-    if (id != "seconds") div.appendChild(this.addDoublePoint(className));
 
     return div;
   },
