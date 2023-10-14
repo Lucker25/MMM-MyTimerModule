@@ -17,17 +17,20 @@
 Module.register("MMM-MyTimerModule", {
   // Default module config.
   defaults: {
-    alarmSound: "http://soundbible.com/grab.php?id=529&type=mp3",
+    alarmSound: '/home/pi/MagicMirror/alarmSound.mp3', // '/home/pi/MagicMirror/alarmSound.mp3'
     showButtons: false,
     sayButton1: {
+      show: false, 
       text: "Der Timer ist zu Ende",
       icon: "fas fa-hourglass"
     },
     sayButton2: {
+      show: false, 
       text: "Das Essen ist fertig",
       icon: "fas fa-cookie-bite"
     },
     sayButton3: {
+      show: false, 
       text: "Zeit für Feierabend",
       icon: "fas fa-laptop-house"
     },
@@ -84,6 +87,7 @@ Module.register("MMM-MyTimerModule", {
         this.addButtonIntervalUpDown("hoursDown", "btnClass", "hours", "down")
       );
     this.addTouchMove(hoursDiv, "hours");
+    this.addScrollWheel(hoursDiv, "hours");
     timeDiv.appendChild(hoursDiv);
 
     var minutesDiv = document.createElement("div");
@@ -106,6 +110,7 @@ Module.register("MMM-MyTimerModule", {
         )
       );
     this.addTouchMove(minutesDiv, "minutes");
+    this.addScrollWheel(minutesDiv, "minutes");
     timeDiv.appendChild(minutesDiv);
 
     var secondsDiv = document.createElement("div");
@@ -116,7 +121,7 @@ Module.register("MMM-MyTimerModule", {
         this.addButtonIntervalUpDown("secondsUp", "btnClass", "seconds", "up")
       );
     secondsDiv.appendChild(
-      this.addTimeIndicator("seconds", this.state.seconds, "timeDisplay", true)
+      this.addTimeSpan("seconds", this.state.seconds, "timeDisplay", true)
     );
     if (this.config.showButtons)
       secondsDiv.appendChild(
@@ -128,38 +133,47 @@ Module.register("MMM-MyTimerModule", {
         )
       );
     this.addTouchMove(secondsDiv, "seconds");
+    this.addScrollWheel(secondsDiv, "seconds")
     timeDiv.appendChild(secondsDiv);
 
     timerDiv.appendChild(timeDiv);
     wrapper.appendChild(timerDiv);
     var sayButtondiv = document.createElement("div");
     sayButtondiv.className = "secondRow";
+    if (!(this.config.sayButton1.show && this.config.sayButton2.show && this.config.sayButton3.show)){
+      sayButtondiv.className = "secondRow noIcons";
+    }
     sayButtondiv.id = sayButtondiv.className;
-    sayButtondiv.appendChild(
-      this.addSayButton(
-        "sayButton1",
-        this.config.sayButton1.text,
-        "btnClass",
-        this.config.sayButton1.icon
-      )
-    );
-    sayButtondiv.appendChild(
-      this.addSayButton(
-        "sayButton2",
-        this.config.sayButton2.text,
-        "btnClass",
-        this.config.sayButton2.icon
-      )
-    );
-    sayButtondiv.appendChild(
-      this.addSayButton(
-        "sayButton3",
-        this.config.sayButton3.text,
-        "btnClass",
-        this.config.sayButton3.icon
-      )
-    );
-
+    if (this.config.sayButton1.show){
+      sayButtondiv.appendChild(
+        this.addSayButton(
+          "sayButton1",
+          this.config.sayButton1.text,
+          "btnClass",
+          this.config.sayButton1.icon
+        )
+      );
+    }
+    if (this.config.sayButton2.show){
+      sayButtondiv.appendChild(
+        this.addSayButton(
+          "sayButton2",
+          this.config.sayButton2.text,
+          "btnClass",
+          this.config.sayButton2.icon
+        )
+      );
+    }
+    if (this.config.sayButton3.show){
+      sayButtondiv.appendChild(
+        this.addSayButton(
+          "sayButton3",
+          this.config.sayButton3.text,
+          "btnClass",
+          this.config.sayButton3.icon
+        )
+      );
+    }
     wrapper.appendChild(sayButtondiv);
     return wrapper;
   },
@@ -176,9 +190,50 @@ Module.register("MMM-MyTimerModule", {
       console.warn("SERVER LOG", payload);
     }
     if (notification == "sendState") {
-      this.state = payload;
-      this.updateGraphics();
+      
+      var that = this; 
+      console.log("sendStateNotifyer", payload, that.state); 
+      that.state = payload;
+      clearInterval(that.localTimer); 
+      that.localCounter = this.state.duration
+      if (this.state.value == "RUNNING"){
+        console.log("current State:", that)
+        
+        tick(); 
+        this.localTimer = setInterval(function(){   
+          that.localCounter--;
+          console.log("------------------------------")
+          tick();
+        }, 1000)
+      }
+      else{
+        tick(); 
+        
+      }
+
+    this.updateGraphics();
     }
+    /*if(notification == "PLAYALARMSOUND"){
+      this.playAlarmSound(); 
+    }*/
+    if(notification == "MUTEALL"){
+      console.log("MUTEALL")
+      this.muteAll(); 
+    }
+
+    function tick(){
+      that.state.hours = parseInt(that.localCounter / (60 * 60), 10);
+      that.state.minutes = parseInt((that.localCounter / 60) % 60, 10);
+      that.state.seconds = parseInt(that.localCounter % 60, 10);
+      that.updateGraphics();
+      if (that.localCounter <= 0 && that.state.value == "RUNNING") {
+        that.playAlarmSound(); 
+        that.state.value = "ENDED"; 
+        that.updateGraphics();
+        clearInterval(that.localTimer); 
+      }
+    }
+    
   },
   timeIndicator: {},
   //---------------------------------------------- set server state
@@ -188,6 +243,11 @@ Module.register("MMM-MyTimerModule", {
     that.sendSocketNotification("setState", that.state);
   },
   //---------------------------------------------- Graphic Functions
+  muteAll: function(){
+    let wrapper = document.getElementById('MyKitchenTimerWrapper'); 
+    if(wrapper.querySelector("#MyKitchenTimerSound")) 
+      wrapper.removeChild(wrapper.querySelector("#MyKitchenTimerSound"));  
+  }, 
   updateGraphics: function () {
     for (var span in this.timeIndicator)
       this.timeIndicator[span].innerHTML = addZero(this.state[span]);
@@ -282,7 +342,7 @@ Module.register("MMM-MyTimerModule", {
     div.id = id;
     div.className = className;
     div.appendChild(this.addTimeIndicator(id, content, className));
-    div.appendChild(this.addDoublePoint(className));
+    if (id != "seconds") div.appendChild(this.addDoublePoint(className));
 
     return div;
   },
@@ -334,7 +394,8 @@ Module.register("MMM-MyTimerModule", {
     let that = this;
     var button = this._addButton(id, "mute", className);
     button.addEventListener("click", function (e) {
-      that.setServerState("STOP");
+      that.muteAll(); 
+      that.setServerState("MUTE");
     });
     var image = document.createElement("i");
     button.innerHTML = "";
@@ -350,11 +411,11 @@ Module.register("MMM-MyTimerModule", {
       if (that.state.value == "STOPPED") {
         var currentY = e.changedTouches[0].clientY;
         tempState = that.state[unit];
-        if (currentY > lastY + 5) {
+        if (currentY > lastY + 8) {
           tempState--;
           that.state[unit] = that.checkLimits(tempState);
           lastY = currentY;
-        } else if (currentY < lastY - 5) {
+        } else if (currentY < lastY - 8) {
           tempState++;
           that.state[unit] = that.checkLimits(tempState);
           lastY = currentY;
@@ -364,6 +425,27 @@ Module.register("MMM-MyTimerModule", {
       }
     });
   },
+  addScrollWheel: function(element, unit){
+    let that = this;
+    let lastY = 0;
+    element.addEventListener("wheel", function (e) {
+      if (that.state.value == "STOPPED") {
+        tempState = that.state[unit];
+        console.log(e)
+        if(e.deltaY > 0){
+          tempState--;
+          that.state[unit] = that.checkLimits(tempState);
+
+        }
+        else{
+          tempState++;
+          that.state[unit] = that.checkLimits(tempState);
+
+        }
+        that.updateGraphics();
+      }
+    });
+  }, 
   checkLimits: function (value) {
     if (value > 59) value = 59;
     if (value < 0) value = 0;
@@ -371,5 +453,28 @@ Module.register("MMM-MyTimerModule", {
   },
   setSayText: function (content) {
     this.sendSocketNotification("setText", content);
+  },
+  playAlarmSound: function(){
+    console.log("ALARMSOUND PLAY")
+    var wrapper = document.getElementById('MyKitchenTimerWrapper');
+    while (wrapper.querySelector("#MyKitchenTimerSound")) {
+      wrapper.removeChild(wrapper.querySelector("#MyKitchenTimerSound"));
+    }
+    var audio = document.createElement("audio");
+
+    //var srcAudio = //"http://soundbible.com/grab.php?id=2197&type=mp3"; //"/modules/MMM-KitchenTimer/alarmSound.mp3//" //this.config.alarmSound; //"http://soundbible.com/grab.php?id=529&type=mp3"; //"http://soundbible.com/grab.php?id=2061&type=mp3"; //"modules/MMM-KitchenTimer/alarmSound.mp3";
+    //Load the sound file (using a source element for expandability)
+    var src = document.createElement("source");
+    src.src = "./modules/MMM-MyTimerModule/AlarmSounds/alarmSound1.1.mp3"
+    audio.appendChild(src);
+
+    //audio.src = srcAudio;
+    audio.load();
+    audio.volume = 1;
+    audio.setAttribute('id', 'MyKitchenTimerSound');
+    audio.setAttribute('autoplay', true);
+    audio.setAttribute('loop', true);
+
+    wrapper.appendChild(audio);
   }
 });

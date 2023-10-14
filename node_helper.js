@@ -8,12 +8,20 @@
 const NodeHelper = require("node_helper");
 const Log = require("../../js/logger");
 const request = require("request");
+//const player = require('play-sound')(opts = {})
+/*const SonosDevice  = require("../../node_modules/@svrooij/sonos").SonosDevice;
+
+const sonos = new SonosDevice(process.env.SONOS_HOST || '192.168.0.24')*/
 
 module.exports = NodeHelper.create({
   // Override start method.
   start: function () {
     Log.log("Starting node helper for: " + this.name);
     this.sendSocketNotification("Started", this.name);
+    let that = this; 
+    setInterval(function () {
+      that.sendState();
+    }, 30000);
   },
 
   // Override socketNotificationReceived received.
@@ -39,12 +47,10 @@ module.exports = NodeHelper.create({
   },
   state: {
     value: "STOPPED",
-    hours: 0,
-    minutes: 10,
-    seconds: 0
+    duration: 100
   },
   timer: {
-    duration: 0,
+    duration: 100,
     id: ""
   },
   muteTimer: {
@@ -53,9 +59,7 @@ module.exports = NodeHelper.create({
   },
   tick: function () {
     this.timer.duration--;
-    this.state.hours = parseInt(this.timer.duration / (60 * 60), 10);
-    this.state.minutes = parseInt((this.timer.duration / 60) % 60, 10);
-    this.state.seconds = parseInt(this.timer.duration % 60, 10);
+    this.state.duration =this.timer.duration; 
     this.sendState();
   },
   // timer functionality
@@ -66,22 +70,24 @@ module.exports = NodeHelper.create({
     } else if (state.value == "STOP") {
       this.stopTimer(state);
     } else if (state.value == "MUTE") {
-      clearInterval(that.muteTimer.ID);
+      this.stopTimer(); 
+      //clearInterval(that.muteTimer.ID);
+      this.sendSocketNotification("MUTEALL", ""); 
     } else {
       Log.error("STATE is not KNOWN");
     }
   },
   sendState: function () {
     let that = this;
+    console.log(that.state); 
     this.sendSocketNotification("sendState", that.state);
   },
   startTimer: function (newState) {
-    this.state = newState;
+    //this.state = newState;
     this.state.value = "RUNNING";
-    this.timer.duration =
-      this.state.hours * 3600 + this.state.minutes * 60 + this.state.seconds;
+    this.timer.duration = newState.hours * 3600 + newState.minutes * 60 + newState.seconds;
     this.runningTimer();
-    this.sendState();
+    //this.sendState();
   },
   stopTimer: function () {
     let that = this;
@@ -90,7 +96,6 @@ module.exports = NodeHelper.create({
     clearInterval(that.muteTimer.ID);
     that.timer.id = "";
     that.muteTimer.ID = "";
-    //that.state.minutes = 10;
     this.sendState();
   },
   endTimer: function () {
@@ -98,29 +103,32 @@ module.exports = NodeHelper.create({
     this.state.value = "ENDED";
     clearInterval(that.timer.id);
     that.timer.id = "";
-    request(
-      "http://raspberrypi:5005/" +
-        that.say.zone +
-        "/say/" +
-        that.say.text +
-        "/" +
-        that.say.lang +
-        "/" +
-        that.say.volume
-    );
+    //sendTextToSonos();
     that.muteTimer.ID = setInterval(function () {
-      request(
-        "http://raspberrypi:5005/" +
+      //sendTextToSonos();
+    }, that.muteTimer.duration);
+    this.sendState();
+
+    function sendTextToSonos(){
+      //let that = this; 
+      /*request(
+        "http://192.168.0.70:5005/" +
           that.say.zone +
           "/say/" +
           that.say.text +
           "/" +
           that.say.lang +
           "/" +
-          that.say.volume
-      );
-    }, that.muteTimer.duration);
-    this.sendState();
+          that.say.volume, function(error, response, body){
+            that.sendSocketNotification("LOG", {error: error, response: response, body:body}); 
+            if (error){
+              that.sendSocketNotification("PLAYALARMSOUND", true); 
+            }
+          }
+      );*/
+      that.sendSocketNotification("PLAYALARMSOUND", true); 
+
+    }
   },
   runningTimer: function () {
     let that = this;
@@ -134,5 +142,8 @@ module.exports = NodeHelper.create({
         that.endTimer();
       }
     }, 1000);
+  },
+  resetTimer: function (){
+
   }
 });
