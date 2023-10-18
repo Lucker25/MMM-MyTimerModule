@@ -138,7 +138,7 @@ Module.register("MMM-MyTimerModule", {
       );
     this.addTouchMove(secondsDiv, "seconds");
     this.addScrollWheel(secondsDiv, "seconds")
-    this.addScrollWheel(secondsDiv, "seconds")
+    //this.addScrollWheel(secondsDiv, "seconds")
     timeDiv.appendChild(secondsDiv);
 
     timerDiv.appendChild(timeDiv);
@@ -446,15 +446,14 @@ Module.register("MMM-MyTimerModule", {
     let that = this;
     let lastY = 0;
     element.addEventListener("touchmove", function (e) {
+      console.log(that.state.value)
       if (that.state.value == "STOPPED") {
         var currentY = e.changedTouches[0].clientY;
         tempState = that.state[unit];
         if (currentY > lastY + 8) {
-        if (currentY > lastY + 8) {
           tempState--;
           that.state[unit] = that.checkLimits(tempState);
           lastY = currentY;
-        } else if (currentY < lastY - 8) {
         } else if (currentY < lastY - 8) {
           tempState++;
           that.state[unit] = that.checkLimits(tempState);
@@ -464,7 +463,7 @@ Module.register("MMM-MyTimerModule", {
         that.updateGraphics();
       }
       }
-    });
+    );
   },
   addScrollWheel: function(element, unit){
     let that = this;
