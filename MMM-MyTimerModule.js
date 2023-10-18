@@ -90,7 +90,6 @@ Module.register("MMM-MyTimerModule", {
       );
     this.addTouchMove(hoursDiv, "hours");
     this.addScrollWheel(hoursDiv, "hours");
-    this.addScrollWheel(hoursDiv, "hours");
     timeDiv.appendChild(hoursDiv);
 
     var minutesDiv = document.createElement("div");
@@ -113,7 +112,6 @@ Module.register("MMM-MyTimerModule", {
         )
       );
     this.addTouchMove(minutesDiv, "minutes");
-    this.addScrollWheel(minutesDiv, "minutes");
     this.addScrollWheel(minutesDiv, "minutes");
     timeDiv.appendChild(minutesDiv);
 
@@ -138,7 +136,6 @@ Module.register("MMM-MyTimerModule", {
       );
     this.addTouchMove(secondsDiv, "seconds");
     this.addScrollWheel(secondsDiv, "seconds")
-    //this.addScrollWheel(secondsDiv, "seconds")
     timeDiv.appendChild(secondsDiv);
 
     timerDiv.appendChild(timeDiv);
